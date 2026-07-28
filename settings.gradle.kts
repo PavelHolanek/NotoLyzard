@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "NotoLyzard"
 include(":app")
+include(":core:theory")
  
