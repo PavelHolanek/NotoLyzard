@@ -12,9 +12,17 @@ class PatternTest {
     }
 
     @Test
-    fun `gaps are wrong from the fourth note on`() {
-        // Faithful to the original's GetGabs bug: the last entry should be 4, not 0.
-        assertEquals(listOf(0, 4, 3, 0), Pattern(listOf(0, 4, 7, 11)).gaps())
+    fun `gaps are correct for four note patterns`() {
+        // The original's GetGabs bug produced [0, 4, 3, 0] here.
+        assertEquals(listOf(0, 4, 3, 4), Pattern(listOf(0, 4, 7, 11)).gaps())
+        assertEquals(listOf(0, 3, 4, 3), Pattern(listOf(0, 3, 7, 10)).gaps())
+    }
+
+    @Test
+    fun `gaps sum back to the last interval`() {
+        for (pattern in StandardChords.allPatterns + StandardScales.allPatterns) {
+            assertEquals(pattern.name, pattern.intervals.last(), pattern.gaps().sum())
+        }
     }
 
     @Test

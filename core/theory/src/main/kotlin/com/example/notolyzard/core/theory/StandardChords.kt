@@ -3,9 +3,6 @@ package com.example.notolyzard.core.theory
 /**
  * The built-in catalogue of chord patterns. Ported from `StandardChordsProvider`
  * (a static class, hence an `object` here).
- *
- * The interval lists are a faithful 1:1 port and **two of them are musically wrong** —
- * see [allPatterns].
  */
 object StandardChords {
 
@@ -21,17 +18,15 @@ object StandardChords {
         ChordPattern(ChordType.AugmentedTriad, listOf(0, 4, 8), "Augmented Triad"),
         ChordPattern(ChordType.MajorSeventh, listOf(0, 4, 7, 11), "Major Seventh"),
         ChordPattern(ChordType.MinorSeventh, listOf(0, 3, 7, 10), "Minor Seventh"),
-        // Faithful to the original. Musically this should be [0, 4, 7, 10] — the 3 looks
-        // like a typo for 7, which makes this pattern a minor/major hybrid.
-        ChordPattern(ChordType.DominantSeventh, listOf(0, 4, 3, 10), "Dominant Seventh"),
+        // Fixed: the original had [0, 4, 3, 10], a typo of 3 for 7.
+        ChordPattern(ChordType.DominantSeventh, listOf(0, 4, 7, 10), "Dominant Seventh"),
         ChordPattern(ChordType.HalfDiminishedSeventh, listOf(0, 3, 6, 10), "Half Diminished Seventh"),
         ChordPattern(ChordType.DiminishedSeventh, listOf(0, 3, 6, 9), "Diminished Seventh"),
         ChordPattern(ChordType.MinorMajorSeventh, listOf(0, 3, 7, 11), "Minor Major Seventh"),
         ChordPattern(ChordType.AugmentedMajorSeventh, listOf(0, 4, 8, 11), "Augmented Major Seventh"),
-        // Faithful to the original, where the two sus patterns are swapped: sus2 should be
-        // [0, 2, 7] and sus4 should be [0, 5, 7].
-        ChordPattern(ChordType.SusSecondTriad, listOf(0, 5, 7), "Sus Second"),
-        ChordPattern(ChordType.SusFourthTriad, listOf(0, 2, 7), "Sus Fourth"),
+        // Fixed: the original had these two swapped.
+        ChordPattern(ChordType.SusSecondTriad, listOf(0, 2, 7), "Sus Second"),
+        ChordPattern(ChordType.SusFourthTriad, listOf(0, 5, 7), "Sus Fourth"),
     )
 
     /** Patterns for the given [types], in catalogue order. */

@@ -4,11 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
-/**
- * These tests pin the behaviour of the faithful 1:1 port of `NoteInOctave`. Several of
- * them assert results that are musically wrong — they are marked as such. If the defects
- * are ever fixed, these are the assertions to update.
- */
 class PitchTest {
 
     @Test
@@ -18,40 +13,61 @@ class PitchTest {
     }
 
     @Test
-    fun `octave rolls over between G sharp and A, not between B and C`() {
-        // Consequence of the A = 0 enum ordering, faithful to the original.
+    fun `octave changes between G sharp and A`() {
+        // Consequence of the A = 0 ordering: an octave runs A..G#.
         assertEquals(Pitch(5, NoteName.A), Pitch(4, NoteName.G_SHARP) + 1)
-        // Musically wrong: B4 + 1 semitone is C5, not C4.
+        assertEquals(Pitch(4, NoteName.G_SHARP), Pitch(5, NoteName.A) - 1)
+        // B and C therefore sit in the same octave.
         assertEquals(Pitch(4, NoteName.C), Pitch(4, NoteName.B) + 1)
     }
 
     @Test
-    fun `transposing down works while the result stays inside the octave`() {
+    fun `transposing down crosses the octave boundary correctly`() {
         assertEquals(Pitch(4, NoteName.C), Pitch(4, NoteName.E) - 4)
+        assertEquals(Pitch(4, NoteName.A), Pitch(4, NoteName.C) - 3)
+        // Used to throw: the original produced an out-of-range NoteType here.
+        assertEquals(Pitch(3, NoteName.G_SHARP), Pitch(4, NoteName.C) - 4)
     }
 
     @Test
-    fun `transposing down uses truncating division, so the octave shift is inconsistent`() {
-        // E4 - 4: the octave term is -9 / 12, which truncates to 0, so the octave is kept.
-        assertEquals(4, (Pitch(4, NoteName.E) - 4).octave)
-        // C4 - 3: the octave term is -12 / 12 = -1, so the octave drops even though A is
-        // the first note of the octave under the A = 0 ordering.
-        assertEquals(Pitch(3, NoteName.A), Pitch(4, NoteName.C) - 3)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun `transposing down below the enum start throws`() {
-        // The original applied no modulo here and produced an undefined NoteType.
-        // Kotlin enums cannot hold an out-of-range ordinal, so this throws instead.
-        Pitch(4, NoteName.C) - 4
+    fun `transposing works for offsets beyond a single octave in both directions`() {
+        assertEquals(Pitch(6, NoteName.C), Pitch(4, NoteName.C) + 24)
+        // Used to be broken: the original only handled offsets down to -12.
+        assertEquals(Pitch(2, NoteName.C), Pitch(4, NoteName.C) - 24)
+        assertEquals(Pitch(2, NoteName.C), Pitch(4, NoteName.C) + (-24))
+        assertEquals(Pitch(1, NoteName.C_SHARP), Pitch(4, NoteName.C) - 35)
     }
 
     @Test
-    fun `distance between two pitches is not a real interval`() {
-        // Musically wrong: the original multiplies the octave by the note index instead
-        // of scaling it by 12, so C4 - A4 reports 0 rather than 3.
-        assertEquals(0, Pitch(4, NoteName.C) - Pitch(4, NoteName.A))
+    fun `transposing up and back down is an identity`() {
+        val start = Pitch(4, NoteName.F)
+        for (offset in -30..30) {
+            assertEquals(start, (start + offset) - offset)
+        }
+    }
+
+    @Test
+    fun `distance between two pitches is a signed semitone count`() {
+        assertEquals(3, Pitch(4, NoteName.C) - Pitch(4, NoteName.A))
+        assertEquals(-3, Pitch(4, NoteName.A) - Pitch(4, NoteName.C))
         assertEquals(0, Pitch(4, NoteName.C) - Pitch(4, NoteName.C))
+        assertEquals(12, Pitch(5, NoteName.C) - Pitch(4, NoteName.C))
+        assertEquals(-12, Pitch(4, NoteName.C) - Pitch(5, NoteName.C))
+    }
+
+    @Test
+    fun `distance agrees with transposition`() {
+        val low = Pitch(3, NoteName.D_SHARP)
+        val high = Pitch(5, NoteName.B)
+        assertEquals(high, low + (high - low))
+    }
+
+    @Test
+    fun `absoluteSemitone counts from A in octave 0`() {
+        assertEquals(0, Pitch(0, NoteName.A).absoluteSemitone)
+        assertEquals(51, Pitch(4, NoteName.C).absoluteSemitone)
+        assertEquals(Pitch(4, NoteName.C), Pitch.of(51))
+        assertEquals(Pitch(-1, NoteName.G_SHARP), Pitch.of(-1))
     }
 
     @Test

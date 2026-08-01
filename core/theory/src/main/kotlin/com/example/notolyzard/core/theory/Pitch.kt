@@ -1,56 +1,55 @@
 package com.example.notolyzard.core.theory
 
+import com.example.notolyzard.core.theory.NoteName.Companion.SEMITONES_PER_OCTAVE
+
 /**
  * A note together with its octave.
  *
- * Ported from `NoteInOctave`. The arithmetic below is a **faithful 1:1 port of the C#
- * original, including its defects** — see the notes on each operator. Do not "clean up"
- * a formula here without deciding first whether the behaviour change is wanted.
+ * Ported from `NoteInOctave`, with its arithmetic corrected — see the notes on each
+ * operator for what changed against the C# original.
+ *
+ * All operators are expressed in terms of [absoluteSemitone], which is the single source
+ * of truth for pitch arithmetic. Because [NoteName] is ordered from A, an octave here runs
+ * A..G#, so the octave number changes between G# and A rather than between B and C.
  *
  * Unlike the original, [octave] is public. In the C# source it had no access modifier and
- * was therefore private, which made it unreadable from outside the class; that looked
- * unintentional rather than a design decision.
+ * was therefore private, which made it unreadable from outside the class.
  */
 class Pitch(val octave: Int, noteName: NoteName) : PitchClass(noteName) {
 
     /**
-     * Transposes up by [semitones].
-     *
-     * Faithful to the original, which means:
-     * - the octave rolls over between G# and A (not between B and C), because [NoteName]
-     *   is ordered from A;
-     * - the octave increment uses truncating division, so it is wrong for negative
-     *   [semitones];
-     * - only `semitones >= -12` is handled, because the wrap-around correction is a
-     *   hardcoded `+ 12`. Lower values throw (the original produced a garbage note).
+     * Absolute position of this pitch in semitones, counted from A in octave 0.
+     * Monotonic and signed, so it can be compared and subtracted directly.
      */
-    override operator fun plus(semitones: Int): Pitch = Pitch(
-        octave + (semitone + semitones) / 12,
-        NoteName.ofSemitone((semitone + semitones + 12) % 12),
-    )
+    val absoluteSemitone: Int get() = octave * SEMITONES_PER_OCTAVE + semitone
+
+    /**
+     * Transposes up by [semitones], carrying into the octave as needed.
+     *
+     * Fixed: the original computed the octave with truncating division and corrected the
+     * note with a hardcoded `+ 12`, so it was wrong for negative offsets and broke
+     * entirely below -12. Flooring division and Euclidean modulo make it correct for any
+     * offset.
+     */
+    override operator fun plus(semitones: Int): Pitch = of(absoluteSemitone + semitones)
 
     /**
      * Transposes down by [semitones].
      *
-     * Faithful to the original, which applies no modulo to the resulting note at all:
-     * `a.Type - b`. In C# that silently produced an out-of-range `NoteType`; here it
-     * throws via [NoteName.ofSemitone]. In practice this operator only works for
-     * `semitones` in `0..semitone`.
+     * Fixed: the original applied no modulo to the resulting note (`a.Type - b`), which
+     * produced an out-of-range `NoteType` whenever it crossed below A.
      */
-    override operator fun minus(semitones: Int): Pitch = Pitch(
-        octave + (semitone - semitones - 12) / 12,
-        NoteName.ofSemitone(semitone - semitones),
-    )
+    override operator fun minus(semitones: Int): Pitch = this + (-semitones)
 
     /**
-     * Distance between two pitches.
+     * Distance from [other] up to this pitch, in semitones. Negative if this pitch is
+     * lower.
      *
-     * Faithful to the original, which **multiplies** the octave by the note index
-     * (`a.Octave * a.Type - b.Octave * b.Type`) instead of scaling the octave by 12.
-     * The result is not a meaningful interval and may be negative.
+     * Fixed: the original multiplied the octave by the note index
+     * (`a.Octave * a.Type - b.Octave * b.Type`) and took it modulo 12, which did not
+     * produce an interval at all.
      */
-    operator fun minus(other: Pitch): Int =
-        (octave * semitone - other.octave * other.semitone) % 12
+    operator fun minus(other: Pitch): Int = absoluteSemitone - other.absoluteSemitone
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -62,4 +61,12 @@ class Pitch(val octave: Int, noteName: NoteName) : PitchClass(noteName) {
     override fun hashCode(): Int = 31 * noteName.hashCode() + octave
 
     override fun toString(): String = "${noteName.symbol}$octave"
+
+    companion object {
+        /** Builds a pitch from an [absoluteSemitone] value, valid for any integer. */
+        fun of(absoluteSemitone: Int): Pitch = Pitch(
+            absoluteSemitone.floorDiv(SEMITONES_PER_OCTAVE),
+            NoteName.ofSemitone(absoluteSemitone.mod(SEMITONES_PER_OCTAVE)),
+        )
+    }
 }

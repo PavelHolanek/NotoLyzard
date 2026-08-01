@@ -25,23 +25,47 @@ class StandardChordsTest {
     }
 
     @Test
-    fun `dominant seventh keeps the original typo`() {
-        // Faithful: should be [0, 4, 7, 10].
+    fun `dominant seventh is a major triad plus a minor seventh`() {
+        // The original had [0, 4, 3, 10].
         val pattern = StandardChords.patterns(listOf(ChordType.DominantSeventh)).single()
-        assertEquals(listOf(0, 4, 3, 10), pattern.intervals)
+        assertEquals(listOf(0, 4, 7, 10), pattern.intervals)
     }
 
     @Test
-    fun `sus2 and sus4 stay swapped`() {
-        // Faithful: SusSecond should be [0, 2, 7] and SusFourth [0, 5, 7].
+    fun `dominant seventh on C4`() {
+        val chord = Chord(
+            StandardChords.patterns(listOf(ChordType.DominantSeventh)).single(),
+            Pitch(4, NoteName.C),
+        )
+        // A# is the enharmonic spelling of B flat; it lands in octave 5 because an octave
+        // runs A..G# under the A = 0 ordering.
+        assertEquals(listOf("C4", "E4", "G4", "A#5"), chord.notes.map { it.toString() })
+    }
+
+    @Test
+    fun `sus2 and sus4 are the right way round`() {
+        // The original had these two swapped.
         assertEquals(
-            listOf(0, 5, 7),
+            listOf(0, 2, 7),
             StandardChords.patterns(listOf(ChordType.SusSecondTriad)).single().intervals,
         )
         assertEquals(
-            listOf(0, 2, 7),
+            listOf(0, 5, 7),
             StandardChords.patterns(listOf(ChordType.SusFourthTriad)).single().intervals,
         )
+    }
+
+    @Test
+    fun `every pattern is ascending and fits in one octave`() {
+        for (pattern in StandardChords.allPatterns) {
+            assertEquals(pattern.name, listOf(0), pattern.intervals.take(1))
+            assertEquals(
+                pattern.name,
+                pattern.intervals.sorted().distinct(),
+                pattern.intervals,
+            )
+            assertEquals(pattern.name, true, pattern.intervals.last() < 12)
+        }
     }
 
     @Test
