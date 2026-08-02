@@ -10,6 +10,9 @@ import kotlinx.serialization.Serializable
  * strings.
  */
 @Serializable
+data object ScalesAndChordsVisualizationRoute
+
+@Serializable
 data object ScaleViewerRoute
 
 // TODO: add further destinations here as screens are built, for example:

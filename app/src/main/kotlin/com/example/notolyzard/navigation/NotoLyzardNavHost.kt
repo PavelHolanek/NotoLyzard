@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.notolyzard.feature.scalesandchords.ScalesAndChordsVisualizationScreen
 import com.example.notolyzard.feature.scaleviewer.ScaleViewerScreen
 
 /**
@@ -22,9 +23,13 @@ fun NotoLyzardNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScaleViewerRoute,
+        startDestination = ScalesAndChordsVisualizationRoute,
         modifier = modifier,
     ) {
+        composable<ScalesAndChordsVisualizationRoute> {
+            ScalesAndChordsVisualizationScreen()
+        }
+
         composable<ScaleViewerRoute> {
             ScaleViewerScreen()
         }

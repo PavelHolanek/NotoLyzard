@@ -24,6 +24,7 @@ import com.example.notolyzard.core.theory.Scale
 import com.example.notolyzard.core.theory.ScaleType
 import com.example.notolyzard.core.theory.StandardScales
 import com.example.notolyzard.ui.components.CircleOfFifths
+import com.example.notolyzard.ui.components.NoteGroupLayer
 import com.example.notolyzard.ui.theme.NotoLyzardTheme
 
 /**
@@ -74,9 +75,15 @@ fun ScaleViewerContent(
                 onTypeSelected = onScaleTypeSelected,
             )
 
+            // The same shared component the Circle of Fifths page uses. This screen shows
+            // exactly one group, so it hands over a single layer.
             CircleOfFifths(
-                highlighted = uiState.scaleNotes,
-                selected = uiState.rootNote,
+                layers = listOf(
+                    NoteGroupLayer(
+                        noteGroup = uiState.scale,
+                        color = MaterialTheme.colorScheme.primary,
+                    ),
+                ),
                 onNoteClick = onRootNoteSelected,
             )
 
