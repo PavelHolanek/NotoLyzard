@@ -3,9 +3,8 @@ package com.example.notolyzard.feature.scalesandchords
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -15,11 +14,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notolyzard.core.theory.PitchClass
-import com.example.notolyzard.data.notegroups.NoteGroupsModel
-import com.example.notolyzard.ui.components.CircleOfFifths
 import com.example.notolyzard.ui.components.NoteGroupLayer
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPicker
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPickerState
+import com.example.notolyzard.ui.components.tonnetz.Tonnetz
 import com.example.notolyzard.ui.theme.LocalNotePalette
 import com.example.notolyzard.ui.theme.NotoLyzardTheme
 
@@ -52,13 +50,10 @@ fun ScalesAndChordsVisualizationContent(
         }
     }
 
-    // No Scaffold and no top app bar: NotoLyzardApp owns both, so a screen that brought its
-    // own would sit under a second bar saying the same thing as its navigation tab.
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         NoteGroupsPicker(
@@ -66,9 +61,16 @@ fun ScalesAndChordsVisualizationContent(
             rowColors = groupColors,
         )
 
-        CircleOfFifths(
+        // CircleOfFifths(
+        //     layers = layers,
+        //     onNoteClick = onNoteClicked,
+        // )
+
+        Tonnetz(
             layers = layers,
-            onNoteClick = onNoteClicked,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
         )
     }
 }

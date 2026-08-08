@@ -35,7 +35,7 @@ import kotlin.math.sin
 @Composable
 fun NoteCircleButton(
     state: NoteCircleButtonState,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalNotePalette.current
@@ -43,7 +43,7 @@ fun NoteCircleButton(
 
     Box(
         modifier = modifier
-            .clickable(onClick = onClick)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .semantics { if (label.isNotEmpty()) contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
