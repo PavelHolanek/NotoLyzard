@@ -6,10 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -42,7 +38,6 @@ fun ScalesAndChordsVisualizationScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScalesAndChordsVisualizationContent(
     uiState: ScalesAndChordsVisualizationUiState,
@@ -50,35 +45,30 @@ fun ScalesAndChordsVisualizationContent(
     onNoteClicked: (PitchClass) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val palette = LocalNotePalette.current
-    val groupColors = palette.groupColors
+    val groupColors = LocalNotePalette.current.groupColors
     val layers = remember(uiState.selectedNoteGroups, groupColors) {
         uiState.selectedNoteGroups.mapIndexed { index, group ->
             NoteGroupLayer(noteGroup = group, color = groupColors[index % groupColors.size])
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = palette.background,
-        topBar = { TopAppBar(title = { Text(text = "Scales and Chords") }) },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            NoteGroupsPicker(
-                state = pickerState,
-                rowColors = groupColors,
-            )
+    // No Scaffold and no top app bar: NotoLyzardApp owns both, so a screen that brought its
+    // own would sit under a second bar saying the same thing as its navigation tab.
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        NoteGroupsPicker(
+            state = pickerState,
+            rowColors = groupColors,
+        )
 
-            CircleOfFifths(
-                layers = layers,
-                onNoteClick = onNoteClicked,
-            )
-        }
+        CircleOfFifths(
+            layers = layers,
+            onNoteClick = onNoteClicked,
+        )
     }
 }

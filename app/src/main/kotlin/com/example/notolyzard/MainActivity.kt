@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.notolyzard.navigation.NotoLyzardNavHost
+import com.example.notolyzard.navigation.NotoLyzardApp
 import com.example.notolyzard.ui.theme.NotoLyzardTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotoLyzardTheme {
-                NotoLyzardNavHost()
+                NotoLyzardApp()
             }
         }
     }
