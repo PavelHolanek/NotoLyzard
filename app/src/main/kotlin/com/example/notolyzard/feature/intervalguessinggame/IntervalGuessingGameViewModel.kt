@@ -32,7 +32,7 @@ class IntervalGuessingGameViewModel() : ViewModel() {
     val pickerState: PitchClassPickerState = PitchClassPickerState(
         maxSelected = 1,
         onSelectionChanged = { selection -> selection.singleOrNull()?.let(::pitchClassChosen) },
-    )
+    ).apply { randomize() }
 
     private var enabledDirections: Set<ArrowDirection> =
         setOf(ArrowDirection.Up, ArrowDirection.Down)
