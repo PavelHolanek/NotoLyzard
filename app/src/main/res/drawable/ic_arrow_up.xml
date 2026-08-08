@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The block arrow from the old MAUI project's Resources/Images, converted from SVG.
+
+  One file covers all four originals: the down arrow is this path mirrored vertically, and
+  the grey variants differed from the black ones only in stroke colour, which now comes
+  from NotePalette at the call site instead of being baked in.
+
+  Stroked, not filled, like the original outline. Tinting recolours the stroke too.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="33dp"
+    android:viewportWidth="80.424431"
+    android:viewportHeight="110.09462">
+    <path
+        android:pathData="M18.31747,107.594608 h43.789468 l-0.17873,-67.38216 h15.99656 L40.212208,2.499889 2.49964,40.212448 h15.81783 z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="butt"
+        android:strokeLineJoin="round" />
+</vector>

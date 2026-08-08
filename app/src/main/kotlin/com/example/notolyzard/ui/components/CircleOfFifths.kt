@@ -94,7 +94,7 @@ private fun BoxScope.Ring(
         ) {
             NoteCircleButton(
                 state = state,
-                onClick = { onNoteClick(state.pitchClass) },
+                onClick = state.pitchClass?.let{{onNoteClick(it)}} ?: {},
                 modifier = Modifier.size(buttonSize),
             )
         }

@@ -39,12 +39,12 @@ fun NoteCircleButton(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalNotePalette.current
-    val label = state.pitchClass.noteName.symbol
+    val label = state.label
 
     Box(
         modifier = modifier
             .clickable(onClick = onClick)
-            .semantics { contentDescription = label },
+            .semantics { if (label.isNotEmpty()) contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -54,10 +54,12 @@ fun NoteCircleButton(
             )
         }
 
-        NoteLabel(
-            text = label,
-            color = state.textColor ?: palette.noteText,
-        )
+        if (label.isNotEmpty()) {
+            NoteLabel(
+                text = label,
+                color = state.textColor ?: palette.noteText,
+            )
+        }
     }
 }
 

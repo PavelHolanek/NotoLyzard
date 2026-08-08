@@ -5,4 +5,8 @@ enum class TopLevelDestination(val route: Any, val label: String) {
         route = ScalesAndChordsVisualizationRoute,
         label = "Scales & Chords",
     ),
+	IntervalGuessingGame(
+        route = IntervalGuessingGameRoute,
+        label = "Intervals",
+    ),
 }

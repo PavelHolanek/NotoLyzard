@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.notolyzard.feature.scalesandchords.ScalesAndChordsVisualizationScreen
+import com.example.notolyzard.feature.intervalguessinggame.IntervalGuessingGameScreen
 
 @Composable
 fun NotoLyzardNavHost(
@@ -20,6 +21,10 @@ fun NotoLyzardNavHost(
     ) {
         composable<ScalesAndChordsVisualizationRoute> {
             ScalesAndChordsVisualizationScreen()
+        }
+
+        composable<IntervalGuessingGameRoute> {
+            IntervalGuessingGameScreen()
         }
     }
 }
