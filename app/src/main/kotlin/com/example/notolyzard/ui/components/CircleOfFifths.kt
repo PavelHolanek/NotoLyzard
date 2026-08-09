@@ -48,11 +48,9 @@ fun CircleOfFifths(
 
     val palette = LocalNotePalette.current
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
-    ) {
+    // No fillMaxWidth: on its own, aspectRatio settles on whichever of the two constraints
+    // it can satisfy, so the circle fits a wide box as happily as a tall one.
+    BoxWithConstraints(modifier = modifier.aspectRatio(1f)) {
         val diameter = minOf(maxWidth, maxHeight)
         val buttonSize = diameter * BUTTON_RATIO
 

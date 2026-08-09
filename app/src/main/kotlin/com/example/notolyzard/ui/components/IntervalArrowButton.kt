@@ -104,7 +104,7 @@ private fun ArrowLabel(text: String, color: Color) {
 }
 
 /** Width over height of ic_arrow_up's viewport, so the drawing never stretches. */
-private const val ARROW_ASPECT_RATIO = 80.424431f / 110.09462f
+internal const val ARROW_ASPECT_RATIO = 80.424431f / 110.09462f
 
 /** Kept below the shaft's inner width, so the interval never touches the outline. */
 private const val LABEL_RATIO = 0.30f
