@@ -14,6 +14,7 @@ data class NotePalette(
     val background: Color,
     val correct: Color,
     val incorrect: Color,
+    val fretboard: Color,
 ) {
     companion object {
         val Basic = NotePalette(
@@ -30,6 +31,7 @@ data class NotePalette(
             background = Color(0xFF4F4F4F),
             correct = Color(0xFF00A82D),
             incorrect = Color(0xFFD90007),
+            fretboard = Color(0xFF9C7A5B),
         )
     }
 }

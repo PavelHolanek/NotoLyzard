@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -17,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notolyzard.core.theory.PitchClass
 import com.example.notolyzard.ui.components.CircleOfFifths
 import com.example.notolyzard.ui.components.NoteGroupLayer
+import com.example.notolyzard.ui.components.fretboard.Fretboard
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPicker
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPickerState
 import com.example.notolyzard.ui.components.tonnetz.Tonnetz
@@ -51,9 +53,10 @@ fun ScalesAndChordsVisualizationContent(
 ) {
     val groupColors = LocalNotePalette.current.groupColors
 
-    // Held here rather than inside Tonnetz, so switching away and back does not drop the
-    // reader somewhere else on the lattice.
+    // Held here rather than inside Tonnetz and Fretboard, so switching away and back does
+    // not drop the reader somewhere else on the lattice or the neck.
     val tonnetzState = rememberTonnetzState()
+    val fretboardScrollState = rememberScrollState()
     val layers = remember(uiState.selectedNoteGroups, groupColors) {
         uiState.selectedNoteGroups.mapIndexed { index, group ->
             NoteGroupLayer(noteGroup = group, color = groupColors[index % groupColors.size])
@@ -93,6 +96,12 @@ fun ScalesAndChordsVisualizationContent(
                 Visualization.CircleOfFifths -> CircleOfFifths(
                     layers = layers,
                     onNoteClick = onNoteClicked,
+                )
+
+                Visualization.Fretboard -> Fretboard(
+                    layers = layers,
+                    scrollState = fretboardScrollState,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

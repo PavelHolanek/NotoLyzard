@@ -10,6 +10,7 @@ package com.example.notolyzard.feature.scalesandchords
 enum class Visualization(val label: String) {
     Tonnetz("Tonnetz"),
     CircleOfFifths("Circle of Fifths"),
+    Fretboard("Fretboard"),
     ;
 
     /** The visualization [step] places along, wrapping both ways. Negative steps go back. */
