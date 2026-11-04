@@ -21,6 +21,7 @@ import com.example.notolyzard.ui.components.NoteGroupLayer
 import com.example.notolyzard.ui.components.fretboard.Fretboard
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPicker
 import com.example.notolyzard.ui.components.notegroupspicker.NoteGroupsPickerState
+import com.example.notolyzard.ui.components.pianokeyboard.PianoKeyboard
 import com.example.notolyzard.ui.components.tonnetz.Tonnetz
 import com.example.notolyzard.ui.components.tonnetz.rememberTonnetzState
 import com.example.notolyzard.ui.theme.LocalNotePalette
@@ -53,10 +54,11 @@ fun ScalesAndChordsVisualizationContent(
 ) {
     val groupColors = LocalNotePalette.current.groupColors
 
-    // Held here rather than inside Tonnetz and Fretboard, so switching away and back does
-    // not drop the reader somewhere else on the lattice or the neck.
+    // Held here rather than inside Tonnetz, PianoKeyboard and Fretboard, so switching away and back does
+    // not drop the reader somewhere else on the lattice, keyboard or the neck.
     val tonnetzState = rememberTonnetzState()
     val fretboardScrollState = rememberScrollState()
+    val pianoScrollState = rememberScrollState()
     val layers = remember(uiState.selectedNoteGroups, groupColors) {
         uiState.selectedNoteGroups.mapIndexed { index, group ->
             NoteGroupLayer(noteGroup = group, color = groupColors[index % groupColors.size])
@@ -96,6 +98,12 @@ fun ScalesAndChordsVisualizationContent(
                 Visualization.CircleOfFifths -> CircleOfFifths(
                     layers = layers,
                     onNoteClick = onNoteClicked,
+                )
+
+                Visualization.PianoKeyboard -> PianoKeyboard(
+                    layers = layers,
+                    scrollState = pianoScrollState,
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 Visualization.Fretboard -> Fretboard(
