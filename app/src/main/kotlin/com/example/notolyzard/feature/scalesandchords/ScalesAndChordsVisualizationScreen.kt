@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notolyzard.core.theory.PitchClass
+import com.example.notolyzard.ui.components.ChromaticCircle
 import com.example.notolyzard.ui.components.CircleOfFifths
 import com.example.notolyzard.ui.components.NoteGroupLayer
 import com.example.notolyzard.ui.components.fretboard.Fretboard
@@ -99,6 +100,8 @@ fun ScalesAndChordsVisualizationContent(
                     layers = layers,
                     onNoteClick = onNoteClicked,
                 )
+
+                Visualization.ChromaticCircle -> ChromaticCircle(layers = layers)
 
                 Visualization.PianoKeyboard -> PianoKeyboard(
                     layers = layers,

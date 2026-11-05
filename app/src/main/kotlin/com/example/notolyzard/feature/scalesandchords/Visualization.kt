@@ -10,6 +10,7 @@ package com.example.notolyzard.feature.scalesandchords
 enum class Visualization(val label: String) {
     Tonnetz("Tonnetz"),
     CircleOfFifths("Circle of Fifths"),
+    ChromaticCircle("Chromatic Circle"),
     Fretboard("Fretboard"),
     PianoKeyboard("Piano"),
     ;
