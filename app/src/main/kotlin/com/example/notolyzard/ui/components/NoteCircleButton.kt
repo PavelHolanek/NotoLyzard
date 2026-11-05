@@ -1,17 +1,13 @@
 package com.example.notolyzard.ui.components
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -19,9 +15,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.notolyzard.core.theory.NoteName
@@ -39,48 +40,76 @@ fun NoteCircleButton(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalNotePalette.current
+    val textMeasurer = rememberTextMeasurer()
     val label = state.label
 
+    // The label is drawn rather than composed as a Text: its font scales with the button,
+    // which a Text could only learn in a subcomposition, and screens such as the fretboard
+    // hold over a hundred of these buttons.
     Box(
         modifier = modifier
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .semantics { if (label.isNotEmpty()) contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawNoteRing(
-                segments = state.segments,
-                palette = palette,
-            )
-        }
-
-        if (label.isNotEmpty()) {
-            NoteLabel(
-                text = label,
-                color = state.textColor ?: palette.noteText,
-            )
-        }
-    }
+            .semantics { if (label.isNotEmpty()) contentDescription = label }
+            .drawWithCache {
+                val diameter = size.minDimension
+                val labelLayout = measureNoteLabel(textMeasurer, state, diameter, palette)
+                onDrawBehind {
+                    drawNoteCircle(state.segments, labelLayout, center, diameter, palette)
+                }
+            },
+    )
 }
 
-@Composable
-private fun NoteLabel(text: String, color: Color) {
-    BoxWithConstraints(contentAlignment = Alignment.Center) {
-        Text(
-            text = text,
-            color = color,
-            style = TextStyle(
-                fontSize = (minOf(maxWidth, maxHeight).value * LABEL_RATIO).sp,
-                fontWeight = FontWeight.Bold,
-            ),
+/**
+ * Lays out the label of [state] for a note [diameter] pixels across, or returns null when
+ * there is none. Separate from [drawNoteCircle] so that a caller can measure once and draw
+ * many times.
+ */
+internal fun Density.measureNoteLabel(
+    textMeasurer: TextMeasurer,
+    state: NoteCircleButtonState,
+    diameter: Float,
+    palette: NotePalette,
+): TextLayoutResult? {
+    if (state.label.isEmpty()) return null
+    return textMeasurer.measure(
+        text = state.label,
+        style = TextStyle(
+            color = state.textColor ?: palette.noteText,
+            fontSize = (diameter.toDp().value * LABEL_RATIO).sp,
+            fontWeight = FontWeight.Bold,
+        ),
+    )
+}
+
+/**
+ * Draws a note as [NoteCircleButton] shows it, [diameter] pixels across around [center].
+ *
+ * Components with many notes and no clicks, such as the Tonnetz, use this to draw every note
+ * on one canvas instead of composing a button for each.
+ */
+internal fun DrawScope.drawNoteCircle(
+    segments: List<Color>,
+    label: TextLayoutResult?,
+    center: Offset,
+    diameter: Float,
+    palette: NotePalette,
+) {
+    drawNoteRing(segments, center, diameter, palette)
+    if (label != null) {
+        drawText(
+            textLayoutResult = label,
+            topLeft = center - Offset(label.size.width / 2f, label.size.height / 2f),
         )
     }
 }
 
-private fun DrawScope.drawNoteRing(segments: List<Color>, palette: NotePalette) {
-    val diameter = minOf(size.width, size.height)
-    val center = Offset(size.width / 2f, size.height / 2f)
-
+private fun DrawScope.drawNoteRing(
+    segments: List<Color>,
+    center: Offset,
+    diameter: Float,
+    palette: NotePalette,
+) {
     val outerRadius = diameter / 2f
     val innerRadius = diameter * CENTER_RATIO / 2f
     val bandWidth = outerRadius - innerRadius
