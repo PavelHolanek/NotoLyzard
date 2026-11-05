@@ -1,47 +1,48 @@
 package com.example.notolyzard.ui.components.tonnetz
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.notolyzard.core.theory.NoteName
 import com.example.notolyzard.core.theory.PitchClass
 import com.example.notolyzard.core.theory.Scale
 import com.example.notolyzard.core.theory.ScaleType
 import com.example.notolyzard.core.theory.StandardScales
-import com.example.notolyzard.ui.components.NoteCircleButton
 import com.example.notolyzard.ui.components.NoteCircleButtonState
 import com.example.notolyzard.ui.components.NoteGroupLayer
 import com.example.notolyzard.ui.components.colorsFor
+import com.example.notolyzard.ui.components.drawNoteCircle
+import com.example.notolyzard.ui.components.measureNoteLabel
 import com.example.notolyzard.ui.theme.LocalNotePalette
 import com.example.notolyzard.ui.theme.NotoLyzardTheme
-import kotlin.math.roundToInt
 
 /**
  * The Tonnetz: notes on a triangular lattice, fifths across and thirds along the diagonals,
  * so that every triangle of neighbours spells a major or a minor triad.
  *
  * The lattice is unbounded and can be dragged like a map. Nothing is created or destroyed
- * while dragging — see [TonnetzCoord.pitchClass] for why that is not needed.
+ * while dragging — see [TonnetzCoord.pitchClass] for why that is not needed. The notes are
+ * not clickable, so they are all drawn on one canvas with [drawNoteCircle] rather than
+ * composed as buttons, which keeps dragging out of composition and layout entirely.
  */
 @Composable
 fun Tonnetz(
@@ -55,92 +56,83 @@ fun Tonnetz(
     val palette = LocalNotePalette.current
     val density = LocalDensity.current
     val cellPx = with(density) { cellSpacing.toPx() }
-    val noteRadiusPx = with(density) { noteSize.toPx() } / 2f
+    val noteDiameterPx = with(density) { noteSize.toPx() }
     val edgeWidthPx = with(density) { EDGE_WIDTH.toPx() }
     val geometry = remember(cellPx) { TonnetzGeometry(cellPx) }
+    val textMeasurer = rememberTextMeasurer()
 
-    BoxWithConstraints(
+    // However many nodes are on screen, there are only twelve notes. Each is worked out once,
+    // indexed by semitone, and every node looks its note up.
+    val notes = remember(layers) {
+        NoteName.entries.map { name ->
+            val pitchClass = PitchClass(name)
+            NoteCircleButtonState(pitchClass, layers.colorsFor(pitchClass), textColor = null)
+        }
+    }
+
+    // Whole cells of pan are folded into the note the lattice starts on, so the nodes never
+    // move on the canvas. Crossing a cell boundary only relabels them, in a single redraw.
+    val anchor by remember(geometry, state) { derivedStateOf { geometry.anchor(state.pan) } }
+
+    Spacer(
         modifier = modifier
+            // The lattice has no natural size, so it takes all the room it is given.
+            .fillMaxSize()
             .clipToBounds()
             .pointerInput(state) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     state.panBy(dragAmount)
                 }
+            }
+            // The drawn notes have no semantics of their own.
+            .semantics { contentDescription = "Tonnetz" }
+            // Read inside the lambda on purpose: the sub-cell remainder changes every frame
+            // of a drag, and reading it here only moves the drawn layer, without redrawing it.
+            .graphicsLayer {
+                val residual = geometry.residual(state.pan)
+                translationX = residual.x
+                translationY = residual.y
+            }
+            .drawWithCache {
+                // Rebuilt when the size or the inputs change, never during a drag.
+                val cells = geometry.window(size)
+                val edges = latticeEdges(cells, geometry)
+                val labels = notes.map { measureNoteLabel(textMeasurer, it, noteDiameterPx, palette) }
+
+                onDrawBehind {
+                    drawPoints(edges, PointMode.Lines, palette.outline, edgeWidthPx)
+
+                    val anchorNote = anchor.pitchClass(origin)
+                    cells.forEach { cell ->
+                        val semitone = cell.pitchClass(anchorNote).semitone
+                        drawNoteCircle(
+                            segments = notes[semitone].segments,
+                            label = labels[semitone],
+                            center = geometry.screenOffset(cell),
+                            diameter = noteDiameterPx,
+                            palette = palette,
+                        )
+                    }
+                }
             },
-    ) {
-        val viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
-        val cells = remember(geometry, viewport) { geometry.window(viewport) }
+    )
+}
 
-        // Whole cells of pan are folded into the note the lattice starts on, so the buttons
-        // themselves never move and the set of them never changes. Crossing a cell boundary
-        // costs one recomposition of the labels and colours, the same work a lazy grid does
-        // per row scrolled.
-        val anchor by remember(geometry, state) { derivedStateOf { geometry.anchor(state.pan) } }
-        val anchorNote = anchor.pitchClass(origin)
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                // Read inside the lambda on purpose: the sub-cell remainder changes every
-                // frame of a drag, and this keeps that in the draw phase rather than
-                // recomposing or re-laying out a hundred buttons sixty times a second.
-                .graphicsLayer {
-                    val residual = geometry.residual(state.pan)
-                    translationX = residual.x
-                    translationY = residual.y
-                },
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawLattice(
-                    cells = cells,
-                    geometry = geometry,
-                    color = palette.outline,
-                    strokeWidth = edgeWidthPx,
-                )
-            }
-
-            cells.forEach { cell ->
-                val pitchClass = cell.pitchClass(anchorNote)
-                NoteCircleButton(
-                    state = NoteCircleButtonState(
-                        pitchClass = pitchClass,
-                        outerColors = layers.colorsFor(pitchClass),
-                        textColor = null,
-                    ),
-                    modifier = Modifier
-                        .offset {
-                            val center = geometry.screenOffset(cell)
-                            IntOffset(
-                                x = (center.x - noteRadiusPx).roundToInt(),
-                                y = (center.y - noteRadiusPx).roundToInt(),
-                            )
-                        }
-                        .size(noteSize),
-                )
+/**
+ * Every edge leaving [cells] in one of [EDGE_DIRECTIONS], as the start and end pairs that
+ * [PointMode.Lines] expects.
+ */
+private fun latticeEdges(cells: List<TonnetzCoord>, geometry: TonnetzGeometry): List<Offset> =
+    buildList {
+        cells.forEach { cell ->
+            val start = geometry.screenOffset(cell)
+            EDGE_DIRECTIONS.forEach { direction ->
+                add(start)
+                add(geometry.screenOffset(cell + direction))
             }
         }
     }
-}
-
-private fun DrawScope.drawLattice(
-    cells: List<TonnetzCoord>,
-    geometry: TonnetzGeometry,
-    color: Color,
-    strokeWidth: Float,
-) {
-    cells.forEach { cell ->
-        val start = geometry.screenOffset(cell)
-        EDGE_DIRECTIONS.forEach { direction ->
-            drawLine(
-                color = color,
-                start = start,
-                end = geometry.screenOffset(cell + direction),
-                strokeWidth = strokeWidth,
-            )
-        }
-    }
-}
 
 /**
  * Three of the six neighbours. Drawing all six from every node would draw every edge twice.
