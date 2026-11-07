@@ -24,18 +24,18 @@ class ScalesAndChordsVisualizationViewModel(
     private val selectedVisualization = MutableStateFlow(Visualization.Default)
 
     val uiState: StateFlow<ScalesAndChordsVisualizationUiState> = combine(
-        noteGroupsModel.selectedNoteGroups,
+        picker.shownNoteGroups,
         selectedVisualization,
     ) { noteGroups, visualization ->
         ScalesAndChordsVisualizationUiState(
-            selectedNoteGroups = noteGroups,
+            shownNoteGroups = noteGroups,
             visualization = visualization,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         initialValue = ScalesAndChordsVisualizationUiState(
-            selectedNoteGroups = List(NoteGroupsPickerState.DEFAULT_ROW_COUNT) { null },
+            shownNoteGroups = List(NoteGroupsPickerState.DEFAULT_ROW_COUNT) { null },
         ),
     )
 
@@ -47,11 +47,8 @@ class ScalesAndChordsVisualizationViewModel(
         selectedVisualization.update { it.shiftedBy(step) }
     }
 
-    fun onNoteClicked(pitchClass: PitchClass) {
-        picker.uiState.value.rows.forEachIndexed { row, selection ->
-            if (selection.pattern != null) picker.onRootNoteSelected(row, pitchClass)
-        }
-    }
+    /** A note clicked in any visualization, handed to the picker as a picked note. */
+    fun onNoteClicked(pitchClass: PitchClass) = picker.onNotePicked(pitchClass)
 
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L

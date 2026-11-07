@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import com.example.notolyzard.core.theory.PitchClass
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
@@ -54,6 +55,21 @@ class TonnetzGeometry(private val cellPx: Float) {
         // a given x depends on how far down the row already pushed it.
         val col = floor(-pan.x / cellPx - row / 2f).toInt()
         return TonnetzCoord(col, row)
+    }
+
+    /**
+     * The node drawn within [radiusPx] of [offset], or null when [offset] misses them all.
+     * [offset] is measured the way [screenOffset] measures, from node (0, 0).
+     */
+    fun nodeAt(offset: Offset, radiusPx: Float): TonnetzCoord? {
+        val row = (offset.y / rowHeightPx).roundToInt()
+        val col = (offset.x / cellPx - row / 2f).roundToInt()
+        // Rounding alone finds the nearest node only while the notes stay out of the rows
+        // above and below. The nearest node is always one of these nine, whatever the sizes.
+        val nearest = (row - 1..row + 1)
+            .flatMap { r -> (col - 1..col + 1).map { c -> TonnetzCoord(c, r) } }
+            .minBy { (screenOffset(it) - offset).getDistanceSquared() }
+        return nearest.takeIf { (screenOffset(it) - offset).getDistance() <= radiusPx }
     }
 
     /** What is left of [pan] once [anchor] has absorbed the whole nodes. Under one cell. */

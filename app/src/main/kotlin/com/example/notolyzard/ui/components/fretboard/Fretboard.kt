@@ -42,8 +42,10 @@ import kotlin.math.roundToInt
  *
  * See [FretboardGeometry] for the layout. The fretboard is far wider than a phone, so it
  * scrolls sideways. Unlike the Tonnetz it has two ends, which is exactly what the stock
- * [horizontalScroll] handles, fling and overscroll included. The notes are not clickable,
- * so a swipe that starts on one still scrolls.
+ * [horizontalScroll] handles, fling and overscroll included.
+ *
+ * Clicking a note hands it to [onNoteClick]; without one, the notes are not clickable.
+ * Either way a swipe that starts on a note still scrolls, as only a tap counts as a click.
  *
  * The fret markers sit in a strip below the board rather than on it, where they would
  * compete with the notes — much like the side dots on the edge of a real neck.
@@ -53,6 +55,7 @@ fun Fretboard(
     layers: List<NoteGroupLayer>,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
+    onNoteClick: ((PitchClass) -> Unit)? = null,
     tuning: Tuning = Tuning.Standard,
     fretCount: Int = DEFAULT_FRET_COUNT,
     noteSize: Dp = DEFAULT_NOTE_SIZE,
@@ -90,6 +93,7 @@ fun Fretboard(
         notes.forEach { note ->
             NoteCircleButton(
                 state = note.state,
+                onClick = onNoteClick?.let { click -> { note.state.pitchClass?.let(click) } },
                 modifier = Modifier
                     .offset {
                         IntOffset(

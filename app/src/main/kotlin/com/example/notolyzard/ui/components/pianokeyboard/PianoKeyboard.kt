@@ -40,14 +40,18 @@ import kotlin.math.roundToInt
  * A piano keyboard with a note on every key, coloured by [layers].
  *
  * See [PianoKeyboardGeometry] for the layout. Five octaves are far wider than a phone, so
- * the keyboard scrolls sideways, the same way the fretboard does. The notes are not
- * clickable, so a swipe that starts on one still scrolls.
+ * the keyboard scrolls sideways, the same way the fretboard does.
+ *
+ * Clicking a note hands it to [onNoteClick]; without one, the notes are not clickable.
+ * Only the note itself is clickable, not the rest of its key. A swipe that starts on a
+ * note still scrolls, as only a tap counts as a click.
  */
 @Composable
 fun PianoKeyboard(
     layers: List<NoteGroupLayer>,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
+    onNoteClick: ((PitchClass) -> Unit)? = null,
     octaveCount: Int = DEFAULT_OCTAVE_COUNT,
     whiteKeyWidth: Dp = DEFAULT_WHITE_KEY_WIDTH,
 ) {
@@ -74,8 +78,10 @@ fun PianoKeyboard(
         }
 
         geometry.keys.forEachIndexed { index, key ->
+            val state = notes[index]
             NoteCircleButton(
-                state = notes[index],
+                state = state,
+                onClick = onNoteClick?.let { click -> { state.pitchClass?.let(click) } },
                 modifier = Modifier
                     .offset {
                         IntOffset(

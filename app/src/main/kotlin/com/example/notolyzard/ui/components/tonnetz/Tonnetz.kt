@@ -1,12 +1,14 @@
 package com.example.notolyzard.ui.components.tonnetz
 
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
@@ -41,14 +43,16 @@ import com.example.notolyzard.ui.theme.NotoLyzardTheme
  *
  * The lattice is unbounded and can be dragged like a map. Nothing is created or destroyed
  * while dragging — see [TonnetzCoord.pitchClass] for why that is not needed. The notes are
- * not clickable, so they are all drawn on one canvas with [drawNoteCircle] rather than
- * composed as buttons, which keeps dragging out of composition and layout entirely.
+ * all drawn on one canvas with [drawNoteCircle] rather than composed as buttons, which
+ * keeps dragging out of composition and layout entirely. So a tap is matched to a note by
+ * where it lands instead, and reaches [onNoteClick] only if it never turned into a drag.
  */
 @Composable
 fun Tonnetz(
     layers: List<NoteGroupLayer>,
     modifier: Modifier = Modifier,
     state: TonnetzState = rememberTonnetzState(),
+    onNoteClick: ((PitchClass) -> Unit)? = null,
     noteSize: Dp = DEFAULT_NOTE_SIZE,
     cellSpacing: Dp = DEFAULT_CELL_SPACING,
     origin: PitchClass = PitchClass(NoteName.C),
@@ -60,6 +64,7 @@ fun Tonnetz(
     val edgeWidthPx = with(density) { EDGE_WIDTH.toPx() }
     val geometry = remember(cellPx) { TonnetzGeometry(cellPx) }
     val textMeasurer = rememberTextMeasurer()
+    val currentOnNoteClick by rememberUpdatedState(onNoteClick)
 
     // However many nodes are on screen, there are only twelve notes. Each is worked out once,
     // indexed by semitone, and every node looks its note up.
@@ -85,6 +90,17 @@ fun Tonnetz(
                     state.panBy(dragAmount)
                 }
             }
+            .then(
+                if (onNoteClick == null) Modifier
+                else Modifier.pointerInput(state, geometry, noteDiameterPx, origin) {
+                    // Taps arrive outside the graphicsLayer below, so undoing the whole pan
+                    // puts them where the lattice would be had it never moved.
+                    detectTapGestures { position ->
+                        val node = geometry.nodeAt(position - state.pan, noteDiameterPx / 2f)
+                        if (node != null) currentOnNoteClick?.invoke(node.pitchClass(origin))
+                    }
+                },
+            )
             // The drawn notes have no semantics of their own.
             .semantics { contentDescription = "Tonnetz" }
             // Read inside the lambda on purpose: the sub-cell remainder changes every frame
