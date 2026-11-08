@@ -13,6 +13,24 @@ class StandardChordsTest {
     }
 
     @Test
+    fun `every pattern has its own symbol`() {
+        assertEquals(13, StandardChords.allPatterns.map { it.symbol }.toSet().size)
+    }
+
+    @Test
+    fun `symbols follow lead-sheet notation`() {
+        fun symbolOf(type: ChordType) = StandardChords.patterns(listOf(type)).single().symbol
+
+        // A major triad is written as its root alone.
+        assertEquals("", symbolOf(ChordType.MajorTriad))
+        assertEquals("m", symbolOf(ChordType.MinorTriad))
+        assertEquals("7", symbolOf(ChordType.DominantSeventh))
+        assertEquals("maj7", symbolOf(ChordType.MajorSeventh))
+        assertEquals("m7b5", symbolOf(ChordType.HalfDiminishedSeventh))
+        assertEquals("sus4", symbolOf(ChordType.SusFourthTriad))
+    }
+
+    @Test
     fun `major triad on C4`() {
         val chord = Chord(
             StandardChords.patterns(listOf(ChordType.MajorTriad)).single(),

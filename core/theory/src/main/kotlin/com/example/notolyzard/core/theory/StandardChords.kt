@@ -12,21 +12,21 @@ object StandardChords {
      * following the order of the requested types.
      */
     val allPatterns: List<ChordPattern> = listOf(
-        ChordPattern(ChordType.MajorTriad, listOf(0, 4, 7), "Major Triad"),
-        ChordPattern(ChordType.MinorTriad, listOf(0, 3, 7), "Minor Triad"),
-        ChordPattern(ChordType.DiminishedTriad, listOf(0, 3, 6), "Diminished Triad"),
-        ChordPattern(ChordType.AugmentedTriad, listOf(0, 4, 8), "Augmented Triad"),
-        ChordPattern(ChordType.MajorSeventh, listOf(0, 4, 7, 11), "Major Seventh"),
-        ChordPattern(ChordType.MinorSeventh, listOf(0, 3, 7, 10), "Minor Seventh"),
+        ChordPattern(ChordType.MajorTriad, listOf(0, 4, 7), "Major Triad", ""),
+        ChordPattern(ChordType.MinorTriad, listOf(0, 3, 7), "Minor Triad", "m"),
+        ChordPattern(ChordType.DiminishedTriad, listOf(0, 3, 6), "Diminished Triad", "dim"),
+        ChordPattern(ChordType.AugmentedTriad, listOf(0, 4, 8), "Augmented Triad", "aug"),
+        ChordPattern(ChordType.MajorSeventh, listOf(0, 4, 7, 11), "Major Seventh", "maj7"),
+        ChordPattern(ChordType.MinorSeventh, listOf(0, 3, 7, 10), "Minor Seventh", "m7"),
         // Fixed: the original had [0, 4, 3, 10], a typo of 3 for 7.
-        ChordPattern(ChordType.DominantSeventh, listOf(0, 4, 7, 10), "Dominant Seventh"),
-        ChordPattern(ChordType.HalfDiminishedSeventh, listOf(0, 3, 6, 10), "Half Diminished Seventh"),
-        ChordPattern(ChordType.DiminishedSeventh, listOf(0, 3, 6, 9), "Diminished Seventh"),
-        ChordPattern(ChordType.MinorMajorSeventh, listOf(0, 3, 7, 11), "Minor Major Seventh"),
-        ChordPattern(ChordType.AugmentedMajorSeventh, listOf(0, 4, 8, 11), "Augmented Major Seventh"),
+        ChordPattern(ChordType.DominantSeventh, listOf(0, 4, 7, 10), "Dominant Seventh", "7"),
+        ChordPattern(ChordType.HalfDiminishedSeventh, listOf(0, 3, 6, 10), "Half Diminished Seventh", "m7b5"),
+        ChordPattern(ChordType.DiminishedSeventh, listOf(0, 3, 6, 9), "Diminished Seventh", "dim7"),
+        ChordPattern(ChordType.MinorMajorSeventh, listOf(0, 3, 7, 11), "Minor Major Seventh", "m(maj7)"),
+        ChordPattern(ChordType.AugmentedMajorSeventh, listOf(0, 4, 8, 11), "Augmented Major Seventh", "maj7#5"),
         // Fixed: the original had these two swapped.
-        ChordPattern(ChordType.SusSecondTriad, listOf(0, 2, 7), "Sus Second"),
-        ChordPattern(ChordType.SusFourthTriad, listOf(0, 5, 7), "Sus Fourth"),
+        ChordPattern(ChordType.SusSecondTriad, listOf(0, 2, 7), "Sus Second", "sus2"),
+        ChordPattern(ChordType.SusFourthTriad, listOf(0, 5, 7), "Sus Fourth", "sus4"),
     )
 
     /** Patterns for the given [types], in catalogue order. */

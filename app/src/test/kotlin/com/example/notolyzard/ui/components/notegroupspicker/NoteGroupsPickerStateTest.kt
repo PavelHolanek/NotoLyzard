@@ -1,5 +1,7 @@
 package com.example.notolyzard.ui.components.notegroupspicker
 
+import com.example.notolyzard.core.theory.ChordPattern
+import com.example.notolyzard.core.theory.ChordType
 import com.example.notolyzard.core.theory.NoteName
 import com.example.notolyzard.core.theory.PitchClass
 import com.example.notolyzard.data.notegroups.NoteGroupsModel
@@ -126,6 +128,31 @@ class NoteGroupsPickerStateTest {
 
         assertSame(model.selectedNoteGroups.value[0], picker.shownNoteGroups.first()[0])
     }
+
+    @Test
+    fun `a chord shows its symbol while a scale shows its name`() {
+        val chord = chordPattern(ChordType.MinorSeventh)
+        picker.onPatternGroupSelected(0, NoteGroupsModel.CHORDS)
+        picker.onPatternSelected(0, chord)
+        val scale = model.patternGroups.getValue(NoteGroupsModel.SCALES).first()
+        picker.onPatternGroupSelected(1, NoteGroupsModel.SCALES)
+        picker.onPatternSelected(1, scale)
+
+        assertEquals("m7", rows()[0].patternLabel)
+        assertEquals(scale.name, rows()[1].patternLabel)
+        assertNull(rows()[2].patternLabel)
+    }
+
+    @Test
+    fun `a major triad is not shown as an empty symbol`() {
+        picker.onPatternGroupSelected(0, NoteGroupsModel.CHORDS)
+        picker.onPatternSelected(0, chordPattern(ChordType.MajorTriad))
+
+        assertEquals("maj", rows()[0].patternLabel)
+    }
+
+    private fun chordPattern(type: ChordType) = model.patternGroups.getValue(NoteGroupsModel.CHORDS)
+        .single { (it as ChordPattern).type == type }
 
     private fun rows() = picker.uiState.value.rows
 

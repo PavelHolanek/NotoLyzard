@@ -112,7 +112,8 @@ private fun PickerRow(
             modifier = Modifier.weight(0.7f),
         )
         PickerCell(
-            label = row.pattern?.name,
+            // Closed, a chord shows just its symbol; the open menu keeps the full names.
+            label = row.patternLabel,
             options = patterns,
             optionLabel = { it.name },
             onSelected = onPatternSelected,
