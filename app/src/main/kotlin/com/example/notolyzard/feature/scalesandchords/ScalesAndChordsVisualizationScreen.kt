@@ -60,8 +60,8 @@ fun ScalesAndChordsVisualizationContent(
     val tonnetzState = rememberTonnetzState()
     val fretboardScrollState = rememberScrollState()
     val pianoScrollState = rememberScrollState()
-    val layers = remember(uiState.selectedNoteGroups, groupColors) {
-        uiState.selectedNoteGroups.mapIndexed { index, group ->
+    val layers = remember(uiState.shownNoteGroups, groupColors) {
+        uiState.shownNoteGroups.mapIndexed { index, group ->
             NoteGroupLayer(noteGroup = group, color = groupColors[index % groupColors.size])
         }
     }
@@ -93,6 +93,7 @@ fun ScalesAndChordsVisualizationContent(
                 Visualization.Tonnetz -> Tonnetz(
                     layers = layers,
                     state = tonnetzState,
+                    onNoteClick = onNoteClicked,
                     modifier = Modifier.fillMaxSize(),
                 )
 
@@ -101,17 +102,22 @@ fun ScalesAndChordsVisualizationContent(
                     onNoteClick = onNoteClicked,
                 )
 
-                Visualization.ChromaticCircle -> ChromaticCircle(layers = layers)
+                Visualization.ChromaticCircle -> ChromaticCircle(
+                    layers = layers,
+                    onNoteClick = onNoteClicked,
+                )
 
                 Visualization.PianoKeyboard -> PianoKeyboard(
                     layers = layers,
                     scrollState = pianoScrollState,
+                    onNoteClick = onNoteClicked,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
                 Visualization.Fretboard -> Fretboard(
                     layers = layers,
                     scrollState = fretboardScrollState,
+                    onNoteClick = onNoteClicked,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

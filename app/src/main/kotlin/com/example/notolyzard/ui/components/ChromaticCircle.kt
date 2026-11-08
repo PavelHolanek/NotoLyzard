@@ -40,11 +40,14 @@ private const val LINE_WIDTH_RATIO = 0.01f
  * Where groups share a side, each still draws its own line and they run side by side, so a
  * side shared by N groups is N lines thick. Sides that cross are simply drawn over each
  * other. No circle is drawn, only the notes and the polygons.
+ *
+ * Clicking a note hands it to [onNoteClick]; without one, the notes are not clickable.
  */
 @Composable
 fun ChromaticCircle(
     layers: List<NoteGroupLayer>,
     modifier: Modifier = Modifier,
+    onNoteClick: ((PitchClass) -> Unit)? = null,
     top: PitchClass = PitchClass(NoteName.C),
 ) {
     val notes = remember(layers, top) {
@@ -79,6 +82,7 @@ fun ChromaticCircle(
             val point = circlePoint(position)
             NoteCircleButton(
                 state = state,
+                onClick = onNoteClick?.let { click -> { state.pitchClass?.let(click) } },
                 modifier = Modifier
                     .align(Alignment.Center)
                     .offset(x = ringRadius * point.x, y = ringRadius * point.y)

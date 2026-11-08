@@ -15,15 +15,25 @@ data class NoteGroupsPickerUiState(
 }
 
 /**
- * One row of the picker: pattern group, pattern, root note — the three columns.
+ * One row of the picker: pattern group, pattern, root note — the three columns — and a
+ * toggle either side of them.
  *
- * All three are nullable because a row is filled in left to right, and an untouched row
- * has to be representable.
+ * The three columns are nullable because a row is filled in left to right, and an
+ * untouched row has to be representable.
+ *
+ * [isShown] is the toggle before the columns: switched off, the row keeps its group but
+ * the group is hidden — see [NoteGroupsPickerState.shownNoteGroups]. It starts on.
+ *
+ * [followsPickedNotes] is the toggle after them: while it is on, a note picked outside the
+ * picker, such as by clicking it in a visualization, becomes this row's root note. It
+ * starts off, so a picked note moves nothing until a row is switched on.
  */
 data class NoteGroupsPickerRow(
     val patternGroupName: String? = null,
     val pattern: Pattern? = null,
     val rootNote: PitchClass? = null,
+    val isShown: Boolean = true,
+    val followsPickedNotes: Boolean = false,
 ) {
     /** True once the row describes a group that can actually be built. */
     val isComplete: Boolean get() = pattern != null && rootNote != null
